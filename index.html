@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>CryptoVault & Dragon Tiger</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #090c12;
+      --card: #131824;
+      --card-light: #1b2234;
+      --accent: #f0b90b;
+      --text: #ffffff;
+      --muted: #8b949e;
+      --green: #0ecb81;
+      --red: #f6465d;
+      --blue: #2979ff;
+      --border: #252d3f;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 14px; padding-bottom: 85px; }
+
+    /* Header */
+    .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .user-box { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #f0b90b, #ff8f00); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; }
+    .wallet-pill { background: rgba(14, 203, 129, 0.14); border: 1px solid rgba(14, 203, 129, 0.35); color: var(--green); padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
+
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
+    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Cards */
+    .hero-card { background: linear-gradient(145deg, #1a2133 0%, #10141f 100%); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+    .bal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .bal-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px; border-radius: 12px; }
+    .bal-lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
+    .bal-val { font-size: 20px; font-weight: 800; color: var(--accent); }
+    .bal-val.inr { color: var(--green); }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
+    .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
+    .btn-gold { background: linear-gradient(90deg, #f0b90b, #ffca28); color: #000; }
+    .btn-gold:disabled { background: #2b3242; color: #7d8590; cursor: not-allowed; }
+    .btn-green { background: var(--green); color: #000; }
+
+    /* Status Banner */
+    .lock-banner { background: rgba(246, 70, 93, 0.12); border: 1px solid rgba(246, 70, 93, 0.4); color: #ff7b8b; padding: 12px; border-radius: 12px; font-size: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .lock-banner.unlocked { background: rgba(14, 203, 129, 0.12); border-color: rgba(14, 203, 129, 0.4); color: var(--green); }
+
+    /* Dragon vs Tiger Arena */
+    .timer-box { text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
+    .timer-count { font-size: 32px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
+    .timer-status { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .history-bar { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; align-items: center; }
+    .hist-dot { min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; }
+    .hist-D { background: var(--red); }
+    .hist-T { background: var(--blue); }
+
+    .arena-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .side-card { border-radius: 16px; padding: 18px 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
+    .side-dragon { background: linear-gradient(160deg, #3b1219 0%, #1a0d12 100%); border-color: rgba(246, 70, 93, 0.4); }
+    .side-tiger { background: linear-gradient(160deg, #102542 0%, #0b1320 100%); border-color: rgba(41, 121, 255, 0.4); }
+    .side-card.selected { border-color: var(--accent); transform: scale(1.02); box-shadow: 0 0 18px rgba(240, 185, 11, 0.35); }
+    .side-card.winner { border-color: var(--green); box-shadow: 0 0 22px rgba(14, 203, 129, 0.6); }
+    .side-emoji { font-size: 42px; margin-bottom: 6px; }
+    .side-name { font-size: 17px; font-weight: 900; letter-spacing: 0.5px; }
+    .side-payout { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 4px; }
+    .my-bet-tag { margin-top: 8px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px; font-size: 11px; color: #fff; }
+
+    .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .chip { background: var(--card-light); border: 1px solid var(--border); color: #fff; padding: 10px 0; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; }
+    .chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    /* Inputs */
+    .input-group { margin-bottom: 12px; }
+    .input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+    .input-box { width: 100%; padding: 12px; background: #090c12; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 14px; }
+    .copy-row { display: flex; gap: 8px; }
+    .copy-btn { background: var(--card-light); color: var(--accent); border: 1px solid var(--border); padding: 0 14px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+
+    /* Bottom Nav */
+    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #10141f; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 9px 0; z-index: 100; }
+    .nav-item { background: none; border: none; color: var(--muted); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; font-weight: 700; }
+    .nav-item.active { color: var(--accent); }
+    .nav-icon { font-size: 18px; }
+
+    .toast { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 800; display: none; z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div id="toast" class="toast">Notification</div>
+
+  <!-- Top Header -->
+  <div class="header">
+    <div class="user-box">
+      <div class="avatar" id="userAvatar">M</div>
+      <div>
+        <div style="font-weight:800; font-size:14px;" id="userName">Miner Player</div>
+        <div style="font-size:11px; color:var(--muted);" id="userId">ID: 882910</div>
+      </div>
+    </div>
+    <div class="wallet-pill">₹<span id="headerInr">0</span></div>
+  </div>
+
+  <!-- TAB 1: HOME DASHBOARD -->
+  <div id="home" class="section active">
+    <div id="lockBanner" class="lock-banner">
+      <span>🔒 অ্যাকাউন্ট লক! গেম খেলতে প্রথমে মিনিমাম <b>₹2,000</b> ডিপোজিট করুন।</span>
+      <button onclick="switchTab('deposit', 2)" style="background:#f6465d; color:#fff; border:none; padding:6px 10px; border-radius:8px; font-weight:700; font-size:11px; cursor:pointer;">Deposit</button>
+    </div>
+
+    <div class="hero-card">
+      <div class="bal-grid">
+        <div class="bal-item">
+          <div class="bal-lbl">GAME WALLET (INR)</div>
+          <div class="bal-val inr">₹<span id="inrBalance">0</span></div>
+        </div>
+        <div class="bal-item">
+          <div class="bal-lbl">CRYPTO VAULT (VLT)</div>
+          <div class="bal-val"><span id="vltBalance">0</span> VLT</div>
+        </div>
+      </div>
+      <button class="btn btn-gold" id="claimBtn" onclick="claimDailyCrypto()">🎁 Claim Daily 50 VLT Crypto</button>
+    </div>
+
+    <div class="section-title">Quick Actions</div>
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; font-size:15px;">🐉 Dragon vs Tiger 🐅</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:3px;">প্রতি ১০ সেকেন্ডে বেট লাগান ও ২ গুণ জিতুন!</div>
+      </div>
+      <button class="btn btn-green" style="width:auto; padding:10px 16px;" onclick="switchTab('game', 1)">Play Now</button>
+    </div>
+
+    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <div style="font-weight:800; font-size:15px;">💳 Add Funds (Min ₹2,000)</div>
+        <div style="font-size:12px; color:var(--muted); margin-top:3px;">ডিপোজিট করে VIP গেম ও ট্রেডিং আনলক করুন</div>
+      </div>
+      <button class="btn btn-gold" style="width:auto; padding:10px 16px;" onclick="switchTab('deposit', 2)">Deposit</button>
+    </div>
+  </div>
+
+  <!-- TAB 2: DRAGON VS TIGER GAME -->
+  <div id="game" class="section">
+    <div class="timer-box">
+      <div style="font-size:11px; color:var(--muted); font-weight:700;">ROUND #<span id="roundNumber">101</span></div>
+      <div class="timer-count" id="countdownText">10s</div>
+      <div class="timer-status" id="roundStatus">Place your bet before time runs out!</div>
+    </div>
+
+    <div class="history-bar" id="historyBar">
+      <span style="font-size:11px; color:var(--muted); font-weight:700;">History:</span>
+    </div>
+
+    <div class="arena-grid">
+      <div class="side-card side-dragon" id="cardDragon" onclick="placeBet('DRAGON')">
+        <div class="side-emoji">🐉</div>
+        <div class="side-name" style="color:#ff6b81;">DRAGON</div>
+        <div class="side-payout">Win 2X Payout</div>
+        <div class="my-bet-tag">Your Bet: ₹<span id="betDragon">0</span></div>
+      </div>
+
+      <div class="side-card side-tiger" id="cardTiger" onclick="placeBet('TIGER')">
+        <div class="side-emoji">🐅</div>
+        <div class="side-name" style="color:#5c9eff;">TIGER</div>
+        <div class="side-payout">Win 2X Payout</div>
+        <div class="my-bet-tag">Your Bet: ₹<span id="betTiger">0</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:700;">Select Bet Amount (Tap Dragon or Tiger to Bet):</div>
+      <div class="chip-row">
+        <div class="chip active" onclick="selectChip(50, this)">₹50</div>
+        <div class="chip" onclick="selectChip(100, this)">₹100</div>
+        <div class="chip" onclick="selectChip(500, this)">₹500</div>
+        <div class="chip" onclick="selectChip(1000, this)">₹1000</div>
+      </div>
+      <div style="font-size:12px; color:var(--accent); text-align:center;">
+        Selected Chip: <b>₹<span id="selectedChipText">50</span></b> • Wallet: <b>₹<span id="gameWalletText">0</span></b>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: DEPOSIT (MIN ₹2000) -->
+  <div id="deposit" class="section">
+    <div class="section-title">Deposit Funds (Minimum ₹2,000)</div>
+    <div class="card">
+      <div style="font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
+        গেম আনলক করতে নিচের UPI আইডি বা Crypto অ্যাড্রেসে কমপক্ষে <b>₹2,000</b> পেমেন্ট করে Transaction ID / UTR সাবমিট করুন।
+      </div>
+
+      <div class="input-group">
+        <label>Official UPI ID (PhonePe / GPay / Paytm)</label>
+        <div class="copy-row">
+          <input type="text" id="upiId" class="input-box" value="cryptovault@okaxis" readonly />
+          <button class="copy-btn" onclick="copyText('upiId', 'UPI ID Copied!')">Copy</button>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>Deposit Amount (Minimum ₹2,000)</label>
+        <input type="number" id="depAmount" class="input-box" value="2000" min="2000" />
+      </div>
+
+      <div class="input-group">
+        <label>12-Digit UTR / Transaction Reference Number</label>
+        <input type="text" id="utrInput" class="input-box" placeholder="Enter UTR / Transaction ID..." />
+      </div>
+
+      <button class="btn btn-gold" onclick="submitDeposit()">Verify & Unlock Account</button>
+    </div>
+  </div>
+
+  <!-- TAB 4: WITHDRAW -->
+  <div id="withdraw" class="section">
+    <div class="section-title">Withdraw Winnings</div>
+    <div class="card">
+      <div style="font-size:13px; margin-bottom:12px;">Available Balance: <b style="color:var(--green);">₹<span id="withBal">0</span></b></div>
+      <div class="input-group">
+        <label>Your UPI ID or Bank Account</label>
+        <input type="text" id="withUpi" class="input-box" placeholder="example@upi" />
+      </div>
+      <div class="input-group">
+        <label>Withdraw Amount (Min ₹500)</label>
+        <input type="number" id="withAmt" class="input-box" placeholder="500" />
+      </div>
+      <button class="btn btn-green" onclick="submitWithdraw()">Request Withdrawal</button>
+    </div>
+  </div>
+
+  <!-- Bottom Navigation -->
+  <div class="nav">
+    <button class="nav-item active" onclick="switchTab('home', 0)">
+      <span class="nav-icon">🏠</span>
+      <span>Home</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('game', 1)">
+      <span class="nav-icon">🐉</span>
+      <span>Dragon Tiger</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('deposit', 2)">
+      <span class="nav-icon">💳</span>
+      <span>Deposit</span>
+    </button>
+    <button class="nav-item" onclick="switchTab('withdraw', 3)">
+      <span class="nav-icon">🏦</span>
+      <span>Withdraw</span>
+    </button>
+  </div>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    // Load Telegram User
+    const user = tg.initDataUnsafe?.user;
+    if (user) {
+      document.getElementById('userName').innerText = user.first_name;
+      document.getElementById('userId').innerText = 'ID: ' + user.id;
+      document.getElementById('userAvatar').innerText = user.first_name[0].toUpperCase();
+    }
+
+    // App State
+    let state = JSON.parse(localStorage.getItem('dt_crypto_state')) || {
+      inr: 0,
+      vlt: 0,
+      unlocked: false,
+      lastClaim: 0,
+      history: ['D', 'T', 'D', 'D', 'T']
+    };
+
+    function saveState() {
+      localStorage.setItem('dt_crypto_state', JSON.stringify(state));
+      updateUI();
+    }
+
+    function showToast(msg, color = '#f0b90b') {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.background = color;
+      t.style.color = color === '#f6465d' ? '#fff' : '#000';
+      t.style.display = 'block';
+      setTimeout(() => t.style.display = 'none', 2600);
+    }
+
+    function updateUI() {
+      document.getElementById('headerInr').innerText = state.inr;
+      document.getElementById('inrBalance').innerText = state.inr;
+      document.getElementById('gameWalletText').innerText = state.inr;
+      document.getElementById('withBal').innerText = state.inr;
+      document.getElementById('vltBalance').innerText = state.vlt;
+
+      // Lock/Unlock Banner
+      const banner = document.getElementById('lockBanner');
+      if (state.unlocked) {
+        banner.classList.add('unlocked');
+        banner.innerHTML = '<span>✅ অ্যাকাউন্ট আনলক! আপনি এখন Dragon vs Tiger খেলতে পারবেন।</span>';
+      }
+
+      // Daily Claim Check
+      const claimBtn = document.getElementById('claimBtn');
+      if (Date.now() - state.lastClaim < 86400000) {
+        claimBtn.disabled = true;
+        claimBtn.innerText = '✅ Daily 50 VLT Claimed (24h)';
+      } else {
+        claimBtn.disabled = false;
+        claimBtn.innerText = '🎁 Claim Daily 50 VLT Crypto';
+      }
+
+      // Render History
+      const hBar = document.getElementById('historyBar');
+      hBar.innerHTML = '<span style="font-size:11px; color:var(--muted); font-weight:700;">History:</span>';
+      state.history.slice(-10).forEach(item => {
+        const dot = document.createElement('div');
+        dot.className = `hist-dot hist-${item}`;
+        dot.innerText = item;
+        hBar.appendChild(dot);
+      });
+    }
+
+    // Daily Crypto Claim
+    function claimDailyCrypto() {
+      if (Date.now() - state.lastClaim >= 86400000) {
+        state.vlt += 50;
+        state.lastClaim = Date.now();
+        saveState();
+        showToast('+50 VLT Crypto Claimed!', '#0ecb81');
+      }
+    }
+
+    // Deposit ₹2000+
+    function submitDeposit() {
+      const amt = parseInt(document.getElementById('depAmount').value);
+      const utr = document.getElementById('utrInput').value.trim();
+
+      if (!amt || amt < 2000) {
+        showToast('মিনিমাম ₹2,000 ডিপোজিট করতে হবে!', '#f6465d');
+        return;
+      }
+      if (utr.length < 6) {
+        showToast('সঠিক UTR / Transaction ID দিন!', '#f6465d');
+        return;
+      }
+
+      state.inr += amt;
+      state.unlocked = true;
+      document.getElementById('utrInput').value = '';
+      saveState();
+      showToast(`₹${amt} সফলভাবে অ্যাড হয়েছে! গেম আনলক!`, '#0ecb81');
+      setTimeout(() => switchTab('game', 1), 1200);
+    }
+
+    // Withdraw
+    function submitWithdraw() {
+      const upi = document.getElementById('withUpi').value.trim();
+      const amt = parseInt(document.getElementById('withAmt').value);
+      if (!upi) return showToast('আপনার UPI ID দিন!', '#f6465d');
+      if (!amt || amt < 500) return showToast('মিনিমাম উইথড্র ₹500!', '#f6465d');
+      if (amt > state.inr) return showToast('পর্যাপ্ত ব্যালেন্স নেই!', '#f6465d');
+
+      state.inr -= amt;
+      saveState();
+      document.getElementById('withAmt').value = '';
+      showToast(`₹${amt} উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!`, '#0ecb81');
+    }
+
+    // Dragon vs Tiger Continuous Loop
+    let round = 101;
+    let timeLeft = 10;
+    let bettingOpen = true;
+    let selectedChip = 50;
+    let currentBetSide = null;
+    let currentBetAmount = 0;
+
+    function selectChip(amount, el) {
+      selectedChip = amount;
+      document.getElementById('selectedChipText').innerText = amount;
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+    }
+
+    function placeBet(side) {
+      if (!state.unlocked || state.inr < 50) {
+        showToast('আগে মিনিমাম ₹2,000 ডিপোজিট করুন!', '#f6465d');
+        switchTab('deposit', 2);
+        return;
+      }
+      if (!bettingOpen) {
+        showToast('সময় শেষ! পরের রাউন্ডের জন্য অপেক্ষা করুন।', '#f6465d');
+        return;
+      }
+      if (currentBetSide && currentBetSide !== side) {
+        showToast(`আপনি ইতিমধ্যে ${currentBetSide}-এ বেট লাগিয়েছেন!`, '#f6465d');
+        return;
+      }
+      if (state.inr < selectedChip) {
+        showToast('ওয়ালেটে পর্যাপ্ত টাকা নেই!', '#f6465d');
+        return;
+      }
+
+      state.inr -= selectedChip;
+      currentBetSide = side;
+      currentBetAmount += selectedChip;
+      saveState();
+
+      document.getElementById('cardDragon').classList.toggle('selected', side === 'DRAGON');
+      document.getElementById('cardTiger').classList.toggle('selected', side === 'TIGER');
+      document.getElementById('betDragon').innerText = side === 'DRAGON' ? currentBetAmount : 0;
+      document.getElementById('betTiger').innerText = side === 'TIGER' ? currentBetAmount : 0;
+
+      showToast(`₹${selectedChip} বেট লাগানো হয়েছে (${side})!`, '#0ecb81');
+    }
+
+    setInterval(() => {
+      if (bettingOpen) {
+        timeLeft--;
+        document.getElementById('countdownText').innerText = timeLeft + 's';
+        document.getElementById('countdownText').style.color = timeLeft <= 3 ? '#f6465d' : '#f0b90b';
+
+        if (timeLeft <= 0) {
+          bettingOpen = false;
+          resolveRound();
+        }
+      }
+    }, 1000);
+
+    function resolveRound() {
+      const winner = Math.random() < 0.5 ? 'DRAGON' : 'TIGER';
+      state.history.push(winner === 'DRAGON' ? 'D' : 'T');
+
+      document.getElementById('countdownText').innerText = winner + ' WINS!';
+      document.getElementById('countdownText').style.color = '#0ecb81';
+      document.getElementById('roundStatus').innerText = 'Starting next round in 3 seconds...';
+
+      document.getElementById(winner === 'DRAGON' ? 'cardDragon' : 'cardTiger').classList.add('winner');
+
+      if (currentBetSide === winner) {
+        const winAmt = currentBetAmount * 2;
+        state.inr += winAmt;
+        showToast(`🎉 অভিনন্দন! আপনি ₹${winAmt} জিতেছেন!`, '#0ecb81');
+      } else if (currentBetSide) {
+        showToast(`😔 আপনি ₹${currentBetAmount} হেরে গেছেন!`, '#f6465d');
+      }
+
+      saveState();
+
+      // Reset for Next Round after 3 seconds
+      setTimeout(() => {
+        round++;
+        timeLeft = 10;
+        bettingOpen = true;
+        currentBetSide = null;
+        currentBetAmount = 0;
+
+        document.getElementById('roundNumber').innerText = round;
+        document.getElementById('countdownText').innerText = '10s';
+        document.getElementById('countdownText').style.color = '#f0b90b';
+        document.getElementById('roundStatus').innerText = 'Place your bet before time runs out!';
+        document.getElementById('betDragon').innerText = '0';
+        document.getElementById('betTiger').innerText = '0';
+        document.getElementById('cardDragon').classList.remove('selected', 'winner');
+        document.getElementById('cardTiger').classList.remove('selected', 'winner');
+      }, 3000);
+    }
+
+    function switchTab(tabId, navIndex) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+    }
+
+    function copyText(inputId, msg) {
+      const val = document.getElementById(inputId).value;
+      navigator.clipboard.writeText(val);
+      showToast(msg, '#0ecb81');
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
