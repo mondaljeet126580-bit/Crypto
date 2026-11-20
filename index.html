@@ -1,9 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>CryptoVault & Dragon Tiger</title>
+  <title>CryptoVault & Dragon Tiger Pro</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -16,474 +16,714 @@
       --green: #0ecb81;
       --red: #f6465d;
       --blue: #2979ff;
-      --border: #252d3f;
+      --border: #232d3f;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 14px; padding-bottom: 85px; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+    body { background: var(--bg); color: var(--text); padding: 12px; padding-bottom: 85px; user-select: none; }
 
     /* Header */
-    .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 12px 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 14px; }
+    .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border); margin-bottom: 12px; }
     .user-box { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #f0b90b, #ff8f00); color: #000; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; }
-    .wallet-pill { background: rgba(14, 203, 129, 0.14); border: 1px solid rgba(14, 203, 129, 0.35); color: var(--green); padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #f0b90b, #ff8f00); color: #000; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 15px; }
+    .header-actions { display: flex; align-items: center; gap: 8px; }
+    .sound-btn { background: var(--card-light); border: 1px solid var(--border); color: #fff; width: 34px; height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+    .wallet-pill { background: rgba(14, 203, 129, 0.14); border: 1px solid rgba(14, 203, 129, 0.4); color: var(--green); padding: 6px 12px; border-radius: 20px; font-weight: 800; font-size: 14px; }
 
     /* Sections */
     .section { display: none; }
     .section.active { display: block; }
-    .section-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+    .section-title { font-size: 14px; font-weight: 700; margin-bottom: 10px; color: #fff; display: flex; justify-content: space-between; align-items: center; }
 
-    /* Cards */
-    .hero-card { background: linear-gradient(145deg, #1a2133 0%, #10141f 100%); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
-    .bal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
-    .bal-item { background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 12px; border-radius: 12px; }
-    .bal-lbl { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-    .bal-val { font-size: 20px; font-weight: 800; color: var(--accent); }
-    .bal-val.inr { color: var(--green); }
-
+    /* Cards & Buttons */
     .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px; margin-bottom: 12px; }
-    .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.2s; }
+    .btn { width: 100%; padding: 13px; border: none; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: 0.15s; }
+    .btn:active { transform: scale(0.98); }
     .btn-gold { background: linear-gradient(90deg, #f0b90b, #ffca28); color: #000; }
-    .btn-gold:disabled { background: #2b3242; color: #7d8590; cursor: not-allowed; }
     .btn-green { background: var(--green); color: #000; }
-
-    /* Status Banner */
-    .lock-banner { background: rgba(246, 70, 93, 0.12); border: 1px solid rgba(246, 70, 93, 0.4); color: #ff7b8b; padding: 12px; border-radius: 12px; font-size: 12px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
-    .lock-banner.unlocked { background: rgba(14, 203, 129, 0.12); border-color: rgba(14, 203, 129, 0.4); color: var(--green); }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-outline { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; }
 
     /* Dragon vs Tiger Arena */
-    .timer-box { text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 12px; margin-bottom: 12px; }
-    .timer-count { font-size: 32px; font-weight: 900; color: var(--accent); letter-spacing: 1px; }
-    .timer-status { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .top-bar-game { display: flex; justify-content: space-between; align-items: center; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; margin-bottom: 10px; }
+    .timer-badge { font-size: 20px; font-weight: 900; color: var(--accent); }
+    .status-pill { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; background: rgba(14, 203, 129, 0.15); color: var(--green); }
+    .status-pill.locked { background: rgba(246, 70, 93, 0.15); color: var(--red); }
 
-    .history-bar { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; background: var(--card); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px; align-items: center; }
+    .history-bar { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; background: var(--card); border-radius: 12px; border: 1px solid var(--border); margin-bottom: 12px; align-items: center; }
     .hist-dot { min-width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #fff; }
     .hist-D { background: var(--red); }
     .hist-T { background: var(--blue); }
+    .hist-TIE { background: var(--green); color: #000; }
 
-    .arena-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-    .side-card { border-radius: 16px; padding: 18px 12px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.2s; position: relative; }
-    .side-dragon { background: linear-gradient(160deg, #3b1219 0%, #1a0d12 100%); border-color: rgba(246, 70, 93, 0.4); }
-    .side-tiger { background: linear-gradient(160deg, #102542 0%, #0b1320 100%); border-color: rgba(41, 121, 255, 0.4); }
-    .side-card.selected { border-color: var(--accent); transform: scale(1.02); box-shadow: 0 0 18px rgba(240, 185, 11, 0.35); }
-    .side-card.winner { border-color: var(--green); box-shadow: 0 0 22px rgba(14, 203, 129, 0.6); }
-    .side-emoji { font-size: 42px; margin-bottom: 6px; }
-    .side-name { font-size: 17px; font-weight: 900; letter-spacing: 0.5px; }
-    .side-payout { font-size: 12px; color: var(--accent); font-weight: 700; margin-top: 4px; }
-    .my-bet-tag { margin-top: 8px; background: rgba(0,0,0,0.5); padding: 4px 8px; border-radius: 8px; font-size: 11px; color: #fff; }
+    /* Playing Cards Table */
+    .table-felt { background: radial-gradient(circle at center, #183629 0%, #0d1d17 100%); border: 2px solid #285440; border-radius: 16px; padding: 14px 10px; margin-bottom: 12px; position: relative; }
+    .cards-stage { display: flex; justify-content: space-around; align-items: center; margin-bottom: 14px; }
+    .player-slot { text-align: center; width: 42%; }
+    .slot-label { font-size: 12px; font-weight: 800; letter-spacing: 1px; margin-bottom: 8px; }
+    .slot-label.dragon { color: #ff6b81; }
+    .slot-label.tiger { color: #54a0ff; }
+    .vs-badge { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #000; font-weight: 900; font-size: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 15px rgba(240, 185, 11, 0.4); }
 
-    .chip-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-    .chip { background: var(--card-light); border: 1px solid var(--border); color: #fff; padding: 10px 0; border-radius: 10px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: center; }
-    .chip.active { background: var(--accent); color: #000; border-color: var(--accent); }
+    /* Realistic Playing Card */
+    .playing-card { width: 74px; height: 104px; margin: 0 auto; perspective: 600px; }
+    .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s; transform-style: preserve-3d; }
+    .playing-card.flipped .card-inner { transform: rotateY(180deg); }
+    .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; display: flex; flex-direction: column; justify-content: space-between; padding: 6px 8px; box-shadow: 0 6px 14px rgba(0,0,0,0.45); }
+    .card-back { background: repeating-linear-gradient(45deg, #1e293b, #1e293b 6px, #b91c1c 6px, #b91c1c 12px); border: 2px solid #f0b90b; align-items: center; justify-content: center; }
+    .card-back::after { content: "👑"; font-size: 24px; background: #0f172a; padding: 6px; border-radius: 50%; border: 1px solid #f0b90b; }
+    .card-front { background: #ffffff; color: #111; transform: rotateY(180deg); border: 1px solid #cbd5e1; }
+    .card-front.red-suit { color: #dc2626; }
+    .card-corner { font-size: 15px; font-weight: 900; line-height: 1; text-align: left; }
+    .card-corner.bottom { transform: rotate(180deg); }
+    .card-center-suit { font-size: 30px; text-align: center; line-height: 1; }
 
-    /* Inputs */
+    /* Betting Zones */
+    .bet-zones { display: grid; grid-template-columns: 1fr 0.75fr 1fr; gap: 8px; }
+    .zone-box { border-radius: 12px; padding: 10px 6px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: 0.15s; background: rgba(0,0,0,0.35); }
+    .zone-box:active { transform: scale(0.96); }
+    .zone-dragon { border-color: rgba(246, 70, 93, 0.45); }
+    .zone-tie { border-color: rgba(14, 203, 129, 0.45); }
+    .zone-tiger { border-color: rgba(41, 121, 255, 0.45); }
+    .zone-box.winner-glow { box-shadow: 0 0 18px var(--accent); border-color: var(--accent); background: rgba(240, 185, 11, 0.2); }
+    .zone-title { font-size: 13px; font-weight: 900; }
+    .zone-odds { font-size: 10px; color: var(--accent); font-weight: 700; margin: 2px 0 6px; }
+    .zone-bet-pill { background: rgba(255,255,255,0.1); border-radius: 6px; padding: 3px 6px; font-size: 11px; font-weight: 800; color: #fff; }
+
+    /* Chips */
+    .chip-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 10px; }
+    .chip { background: var(--card-light); border: 1px solid var(--border); color: #fff; padding: 9px 0; border-radius: 10px; font-weight: 800; font-size: 12px; text-align: center; cursor: pointer; }
+    .chip.active { background: var(--accent); color: #000; border-color: var(--accent); box-shadow: 0 0 10px rgba(240, 185, 11, 0.35); }
+
+    /* Inputs & Forms */
     .input-group { margin-bottom: 12px; }
-    .input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
-    .input-box { width: 100%; padding: 12px; background: #090c12; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 14px; }
-    .copy-row { display: flex; gap: 8px; }
-    .copy-btn { background: var(--card-light); color: var(--accent); border: 1px solid var(--border); padding: 0 14px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+    .input-group label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    .input-box { width: 100%; padding: 12px; background: #090c12; border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 15px; font-weight: 700; outline: none; }
+    .input-box:focus { border-color: var(--accent); }
 
-    /* Bottom Nav */
-    .nav { position: fixed; bottom: 0; left: 0; right: 0; background: #10141f; border-top: 1px solid var(--border); display: flex; justify-content: space-around; padding: 9px 0; z-index: 100; }
-    .nav-item { background: none; border: none; color: var(--muted); font-size: 11px; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer; font-weight: 700; }
-    .nav-item.active { color: var(--accent); }
-    .nav-icon { font-size: 18px; }
+    .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+    .q-amt { background: var(--card-light); border: 1px solid var(--border); padding: 8px; border-radius: 8px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .q-amt:active { background: var(--accent); color: #000; }
 
-    .toast { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 10px 18px; border-radius: 20px; font-size: 13px; font-weight: 800; display: none; z-index: 999; box-shadow: 0 4px 15px rgba(0,0,0,0.5); text-align: center; }
+    /* Saved UPI Card */
+    .upi-saved-box { background: rgba(14, 203, 129, 0.08); border: 1px dashed rgba(14, 203, 129, 0.45); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+    /* History List */
+    .tx-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+    .tx-item:last-child { border-bottom: none; }
+    .badge-pending { background: rgba(240, 185, 11, 0.15); color: var(--accent); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; }
+    .badge-success { background: rgba(14, 203, 129, 0.15); color: var(--green); padding: 3px 8px; border-radius: 6px; font-weight: 700; font-size: 10px; }
+
+    /* Bottom Navigation */
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #10141f; border-top: 1px solid var(--border); display: grid; grid-template-columns: repeat(3, 1fr); padding: 8px 0; z-index: 100; }
+    .nav-btn { text-align: center; color: var(--muted); font-size: 11px; font-weight: 700; cursor: pointer; }
+    .nav-btn.active { color: var(--accent); }
+    .nav-icon { font-size: 19px; display: block; margin-bottom: 2px; }
+
+    /* Toast */
+    .toast { position: fixed; top: 18px; left: 50%; transform: translateX(-50%); background: #1e293b; border: 1px solid var(--accent); color: #fff; padding: 10px 18px; border-radius: 25px; font-size: 13px; font-weight: 700; z-index: 999; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.6); white-space: nowrap; }
   </style>
 </head>
 <body>
 
-  <div id="toast" class="toast">Notification</div>
+  <div id="toast" class="toast"></div>
 
-  <!-- Top Header -->
+  <!-- Header -->
   <div class="header">
     <div class="user-box">
-      <div class="avatar" id="userAvatar">M</div>
+      <div class="avatar" id="userAvatar">CV</div>
       <div>
-        <div style="font-weight:800; font-size:14px;" id="userName">Miner Player</div>
-        <div style="font-size:11px; color:var(--muted);" id="userId">ID: 882910</div>
+        <div style="font-weight: 800; font-size: 14px;" id="userName">Player</div>
+        <div style="font-size: 11px; color: var(--accent);">🎁 ₹500 Bonus Active</div>
       </div>
     </div>
-    <div class="wallet-pill">₹<span id="headerInr">0</span></div>
+    <div class="header-actions">
+      <button class="sound-btn" id="soundToggle" onclick="toggleSound()">🔊</button>
+      <div class="wallet-pill">₹<span id="balanceDisplay">500.00</span></div>
+    </div>
   </div>
 
-  <!-- TAB 1: HOME DASHBOARD -->
-  <div id="home" class="section active">
-    <div id="lockBanner" class="lock-banner">
-      <span>🔒 অ্যাকাউন্ট লক! গেম খেলতে প্রথমে মিনিমাম <b>₹2,000</b> ডিপোজিট করুন।</span>
-      <button onclick="switchTab('deposit', 2)" style="background:#f6465d; color:#fff; border:none; padding:6px 10px; border-radius:8px; font-weight:700; font-size:11px; cursor:pointer;">Deposit</button>
+  <!-- SECTION 1: DRAGON VS TIGER (CARD GAME) -->
+  <div id="sec-game" class="section active">
+    <div class="top-bar-game">
+      <div>
+        <div style="font-size: 10px; color: var(--muted);">ROUND #<span id="roundNumber">1024</span></div>
+        <div class="status-pill" id="gameStatus">PLACE YOUR BETS</div>
+      </div>
+      <div class="timer-badge"><span id="timerCount">15</span>s</div>
     </div>
 
-    <div class="hero-card">
-      <div class="bal-grid">
-        <div class="bal-item">
-          <div class="bal-lbl">GAME WALLET (INR)</div>
-          <div class="bal-val inr">₹<span id="inrBalance">0</span></div>
+    <!-- Last Results -->
+    <div class="history-bar" id="historyBar"></div>
+
+    <!-- Card Table -->
+    <div class="table-felt">
+      <div class="cards-stage">
+        <!-- Dragon Card -->
+        <div class="player-slot">
+          <div class="slot-label dragon">🐉 DRAGON</div>
+          <div class="playing-card" id="dragonCard">
+            <div class="card-inner">
+              <div class="card-face card-back"></div>
+              <div class="card-face card-front" id="dragonCardFront">
+                <div class="card-corner" id="dTop">A♠</div>
+                <div class="card-center-suit" id="dMid">♠</div>
+                <div class="card-corner bottom" id="dBot">A♠</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="bal-item">
-          <div class="bal-lbl">CRYPTO VAULT (VLT)</div>
-          <div class="bal-val"><span id="vltBalance">0</span> VLT</div>
-        </div>
-      </div>
-      <button class="btn btn-gold" id="claimBtn" onclick="claimDailyCrypto()">🎁 Claim Daily 50 VLT Crypto</button>
-    </div>
 
-    <div class="section-title">Quick Actions</div>
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <div style="font-weight:800; font-size:15px;">🐉 Dragon vs Tiger 🐅</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:3px;">প্রতি ১০ সেকেন্ডে বেট লাগান ও ২ গুণ জিতুন!</div>
-      </div>
-      <button class="btn btn-green" style="width:auto; padding:10px 16px;" onclick="switchTab('game', 1)">Play Now</button>
-    </div>
+        <div class="vs-badge">VS</div>
 
-    <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-      <div>
-        <div style="font-weight:800; font-size:15px;">💳 Add Funds (Min ₹2,000)</div>
-        <div style="font-size:12px; color:var(--muted); margin-top:3px;">ডিপোজিট করে VIP গেম ও ট্রেডিং আনলক করুন</div>
-      </div>
-      <button class="btn btn-gold" style="width:auto; padding:10px 16px;" onclick="switchTab('deposit', 2)">Deposit</button>
-    </div>
-  </div>
-
-  <!-- TAB 2: DRAGON VS TIGER GAME -->
-  <div id="game" class="section">
-    <div class="timer-box">
-      <div style="font-size:11px; color:var(--muted); font-weight:700;">ROUND #<span id="roundNumber">101</span></div>
-      <div class="timer-count" id="countdownText">10s</div>
-      <div class="timer-status" id="roundStatus">Place your bet before time runs out!</div>
-    </div>
-
-    <div class="history-bar" id="historyBar">
-      <span style="font-size:11px; color:var(--muted); font-weight:700;">History:</span>
-    </div>
-
-    <div class="arena-grid">
-      <div class="side-card side-dragon" id="cardDragon" onclick="placeBet('DRAGON')">
-        <div class="side-emoji">🐉</div>
-        <div class="side-name" style="color:#ff6b81;">DRAGON</div>
-        <div class="side-payout">Win 2X Payout</div>
-        <div class="my-bet-tag">Your Bet: ₹<span id="betDragon">0</span></div>
-      </div>
-
-      <div class="side-card side-tiger" id="cardTiger" onclick="placeBet('TIGER')">
-        <div class="side-emoji">🐅</div>
-        <div class="side-name" style="color:#5c9eff;">TIGER</div>
-        <div class="side-payout">Win 2X Payout</div>
-        <div class="my-bet-tag">Your Bet: ₹<span id="betTiger">0</span></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div style="font-size:12px; color:var(--muted); margin-bottom:8px; font-weight:700;">Select Bet Amount (Tap Dragon or Tiger to Bet):</div>
-      <div class="chip-row">
-        <div class="chip active" onclick="selectChip(50, this)">₹50</div>
-        <div class="chip" onclick="selectChip(100, this)">₹100</div>
-        <div class="chip" onclick="selectChip(500, this)">₹500</div>
-        <div class="chip" onclick="selectChip(1000, this)">₹1000</div>
-      </div>
-      <div style="font-size:12px; color:var(--accent); text-align:center;">
-        Selected Chip: <b>₹<span id="selectedChipText">50</span></b> • Wallet: <b>₹<span id="gameWalletText">0</span></b>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 3: DEPOSIT (MIN ₹2000) -->
-  <div id="deposit" class="section">
-    <div class="section-title">Deposit Funds (Minimum ₹2,000)</div>
-    <div class="card">
-      <div style="font-size:12px; color:var(--muted); margin-bottom:12px; line-height:1.5;">
-        গেম আনলক করতে নিচের UPI আইডিতে কমপক্ষে <b>₹2,000</b> পেমেন্ট করে Transaction ID / UTR সাবমিট করুন।
-      </div>
-
-      <div class="input-group">
-        <label>Official UPI ID (PhonePe / GPay / Paytm)</label>
-        <div class="copy-row">
-          <input type="text" id="upiId" class="input-box" value="7427917987-3@ybl" readonly />
-          <button class="copy-btn" onclick="copyText('upiId', 'UPI ID Copied!')">Copy</button>
+        <!-- Tiger Card -->
+        <div class="player-slot">
+          <div class="slot-label tiger">🐅 TIGER</div>
+          <div class="playing-card" id="tigerCard">
+            <div class="card-inner">
+              <div class="card-face card-back"></div>
+              <div class="card-face card-front" id="tigerCardFront">
+                <div class="card-corner" id="tTop">K♥</div>
+                <div class="card-center-suit" id="tMid">♥</div>
+                <div class="card-corner bottom" id="tBot">K♥</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div class="input-group">
-        <label>Deposit Amount (Minimum ₹2,000)</label>
-        <input type="number" id="depAmount" class="input-box" value="2000" min="2000" />
-      </div>
+      <!-- 3 Betting Zones -->
+      <div class="bet-zones">
+        <div class="zone-box zone-dragon" id="zone-D" onclick="placeBet('D')">
+          <div class="zone-title" style="color: #ff6b81;">DRAGON</div>
+          <div class="zone-odds">2X WIN</div>
+          <div class="zone-bet-pill">₹<span id="bet-D">0</span></div>
+        </div>
 
-      <div class="input-group">
-        <label>12-Digit UTR / Transaction Reference Number</label>
-        <input type="text" id="utrInput" class="input-box" placeholder="Enter UTR / Transaction ID..." />
-      </div>
+        <div class="zone-box zone-tie" id="zone-TIE" onclick="placeBet('TIE')">
+          <div class="zone-title" style="color: var(--green);">TIE</div>
+          <div class="zone-odds">8X WIN</div>
+          <div class="zone-bet-pill">₹<span id="bet-TIE">0</span></div>
+        </div>
 
-      <button class="btn btn-gold" onclick="submitDeposit()">Verify & Unlock Account</button>
+        <div class="zone-box zone-tiger" id="zone-T" onclick="placeBet('T')">
+          <div class="zone-title" style="color: #54a0ff;">TIGER</div>
+          <div class="zone-odds">2X WIN</div>
+          <div class="zone-bet-pill">₹<span id="bet-T">0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Betting Chips (Starts at ₹10) -->
+    <div class="section-title">
+      <span>Select Chip (Min ₹10)</span>
+      <span style="font-size: 11px; color: var(--muted);">Tap Dragon, Tie or Tiger to Bet</span>
+    </div>
+    <div class="chip-row">
+      <div class="chip active" onclick="selectChip(10, this)">₹10</div>
+      <div class="chip" onclick="selectChip(50, this)">₹50</div>
+      <div class="chip" onclick="selectChip(100, this)">₹100</div>
+      <div class="chip" onclick="selectChip(500, this)">₹500</div>
+      <div class="chip" onclick="selectChip(1000, this)">₹1K</div>
     </div>
   </div>
 
-  <!-- TAB 4: WITHDRAW -->
-  <div id="withdraw" class="section">
-    <div class="section-title">Withdraw Winnings</div>
+  <!-- SECTION 2: DIRECT UPI DEPOSIT -->
+  <div id="sec-deposit" class="section">
     <div class="card">
-      <div style="font-size:13px; margin-bottom:12px;">Available Balance: <b style="color:var(--green);">₹<span id="withBal">0</span></b></div>
-      <div class="input-group">
-        <label>Your UPI ID or Bank Account</label>
-        <input type="text" id="withUpi" class="input-box" placeholder="example@upi" />
+      <div class="section-title">
+        <span>Instant UPI Deposit</span>
+        <span style="color: var(--green); font-size: 12px;">Min ₹10 • No Limit</span>
       </div>
+
       <div class="input-group">
-        <label>Withdraw Amount (Min ₹500)</label>
-        <input type="number" id="withAmt" class="input-box" placeholder="500" />
+        <label>Enter Deposit Amount (₹10 or more)</label>
+        <input type="number" id="depAmount" class="input-box" placeholder="Enter amount (e.g. 10, 100, 500)" min="10" value="100" />
       </div>
-      <button class="btn btn-green" onclick="submitWithdraw()">Request Withdrawal</button>
+
+      <div class="quick-amounts">
+        <div class="q-amt" onclick="setDepAmount(10)">₹10</div>
+        <div class="q-amt" onclick="setDepAmount(50)">₹50</div>
+        <div class="q-amt" onclick="setDepAmount(200)">₹200</div>
+        <div class="q-amt" onclick="setDepAmount(1000)">₹1000</div>
+      </div>
+
+      <button class="btn btn-green" onclick="launchDirectUPI()">⚡ Pay Directly via UPI App</button>
+      <div style="font-size: 11px; color: var(--muted); text-align: center; margin-top: 8px;">
+        Opens GPay, PhonePe, Paytm or any installed UPI app directly
+      </div>
+    </div>
+
+    <!-- Auto-appears right after clicking Pay -->
+    <div class="card" id="utrVerifyBox" style="display: none; border-color: var(--accent);">
+      <div class="section-title" style="color: var(--accent);">
+        <span>Confirm Your UPI Payment</span>
+        <span>₹<span id="pendingPayAmt">0</span></span>
+      </div>
+      <p style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">
+        Completed payment in your UPI app? Enter your 12-digit UTR / Reference number below to credit your wallet:
+      </p>
+      <div class="input-group">
+        <input type="number" id="utrInput" class="input-box" placeholder="Enter 12-digit UPI UTR Number" />
+      </div>
+      <button class="btn btn-gold" onclick="confirmDepositUTR()">✅ Verify & Add Balance</button>
+    </div>
+
+    <!-- Deposit History -->
+    <div class="card">
+      <div class="section-title"><span>Recent Deposits</span></div>
+      <div id="depositHistoryList" style="color: var(--muted); font-size: 12px;">No deposits yet.</div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: SET UPI & WITHDRAWAL -->
+  <div id="sec-withdraw" class="section">
+    <!-- Set / Save UPI ID Card -->
+    <div class="card">
+      <div class="section-title">
+        <span>Withdraw Bank / UPI Account</span>
+        <button class="btn-outline" id="editUpiBtn" style="display:none;" onclick="editSavedUPI()">✏️ Change UPI</button>
+      </div>
+
+      <!-- When UPI is NOT set yet -->
+      <div id="upiSetupForm">
+        <div class="input-group">
+          <label>Set Your UPI ID for Instant Payouts</label>
+          <input type="text" id="upiIdInput" class="input-box" placeholder="example@okaxis / 9876543210@ybl" />
+        </div>
+        <button class="btn btn-blue" onclick="saveUserUPI()">💾 Save UPI ID</button>
+      </div>
+
+      <!-- When UPI IS saved -->
+      <div id="upiSavedDisplay" style="display: none;">
+        <div class="upi-saved-box">
+          <div>
+            <div style="font-size: 11px; color: var(--muted);">VERIFIED PAYOUT UPI ID</div>
+            <div style="font-size: 15px; font-weight: 800; color: var(--green); margin-top: 2px;" id="savedUpiText">user@upi</div>
+          </div>
+          <span style="font-size: 20px;">✅</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Withdrawal Request Card -->
+    <div class="card">
+      <div class="section-title">
+        <span>Request Withdrawal</span>
+        <span style="font-size: 12px; color: var(--accent);">Available: ₹<span id="withAvailBal">500</span></span>
+      </div>
+
+      <div class="input-group">
+        <label>Withdrawal Amount (₹)</label>
+        <input type="number" id="withAmount" class="input-box" placeholder="Enter amount to withdraw" min="10" />
+      </div>
+
+      <button class="btn btn-gold" onclick="submitWithdrawalRequest()">📤 Send Withdrawal Request</button>
+    </div>
+
+    <!-- Withdrawal History -->
+    <div class="card">
+      <div class="section-title"><span>Withdrawal Requests</span></div>
+      <div id="withdrawHistoryList" style="color: var(--muted); font-size: 12px;">No withdrawal requests yet.</div>
     </div>
   </div>
 
   <!-- Bottom Navigation -->
-  <div class="nav">
-    <button class="nav-item active" onclick="switchTab('home', 0)">
-      <span class="nav-icon">🏠</span>
-      <span>Home</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('game', 1)">
-      <span class="nav-icon">🐉</span>
-      <span>Dragon Tiger</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('deposit', 2)">
-      <span class="nav-icon">💳</span>
-      <span>Deposit</span>
-    </button>
-    <button class="nav-item" onclick="switchTab('withdraw', 3)">
-      <span class="nav-icon">🏦</span>
-      <span>Withdraw</span>
-    </button>
+  <div class="bottom-nav">
+    <div class="nav-btn active" onclick="switchTab('game', this)">
+      <span class="nav-icon">🃏</span>Dragon Tiger
+    </div>
+    <div class="nav-btn" onclick="switchTab('deposit', this)">
+      <span class="nav-icon">💳</span>Deposit
+    </div>
+    <div class="nav-btn" onclick="switchTab('withdraw', this)">
+      <span class="nav-icon">🏦</span>Withdraw
+    </div>
   </div>
 
   <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    // ==========================================
+    // 🔴 আপনার নিজের UPI আইডি এখানে বসান:
+    const MERCHANT_UPI_ID = "yourname@okaxis";
+    const MERCHANT_NAME = "CryptoVault Pro";
+    // ==========================================
 
-    // Load Telegram User
-    const user = tg.initDataUnsafe?.user;
-    if (user) {
-      document.getElementById('userName').innerText = user.first_name;
-      document.getElementById('userId').innerText = 'ID: ' + user.id;
-      document.getElementById('userAvatar').innerText = user.first_name[0].toUpperCase();
+    // Telegram WebApp Init
+    const tg = window.Telegram && window.Telegram.WebApp;
+    if (tg) {
+      tg.ready();
+      tg.expand();
+      if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+        const u = tg.initDataUnsafe.user;
+        document.getElementById("userName").innerText = u.first_name || "Player";
+        document.getElementById("userAvatar").innerText = (u.first_name || "P")[0].toUpperCase();
+      }
     }
 
-    // App State
-    let state = JSON.parse(localStorage.getItem('dt_crypto_state')) || {
-      inr: 0,
-      vlt: 0,
-      unlocked: false,
-      lastClaim: 0,
-      history: ['D', 'T', 'D', 'D', 'T']
+    // Web Audio Sound Synthesizer (Works offline without external MP3s)
+    let soundEnabled = true;
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function playTone(freq, type, duration, vol = 0.15) {
+      if (!soundEnabled) return;
+      try {
+        if (!audioCtx) audioCtx = new AudioCtx();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    const sounds = {
+      chip: () => playTone(800, "sine", 0.08, 0.15),
+      bet: () => { playTone(520, "triangle", 0.07, 0.2); setTimeout(() => playTone(780, "triangle", 0.09, 0.2), 60); },
+      tick: () => playTone(1000, "sine", 0.04, 0.08),
+      flip: () => { playTone(300, "sawtooth", 0.12, 0.15); setTimeout(() => playTone(600, "sine", 0.15, 0.15), 80); },
+      win: () => {
+        [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => playTone(f, "triangle", 0.25, 0.22), i * 90));
+      },
+      lose: () => {
+        playTone(220, "sawtooth", 0.25, 0.15);
+        setTimeout(() => playTone(160, "sawtooth", 0.35, 0.15), 150);
+      }
     };
 
-    function saveState() {
-      localStorage.setItem('dt_crypto_state', JSON.stringify(state));
-      updateUI();
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundToggle").innerText = soundEnabled ? "🔊" : "🔇";
+      if (soundEnabled) sounds.chip();
     }
 
-    function showToast(msg, color = '#f0b90b') {
-      const t = document.getElementById('toast');
+    function showToast(msg) {
+      const t = document.getElementById("toast");
       t.innerText = msg;
-      t.style.background = color;
-      t.style.color = color === '#f6465d' ? '#fff' : '#000';
-      t.style.display = 'block';
-      setTimeout(() => t.style.display = 'none', 2600);
+      t.style.display = "block";
+      setTimeout(() => { t.style.display = "none"; }, 2600);
     }
 
-    function updateUI() {
-      document.getElementById('headerInr').innerText = state.inr;
-      document.getElementById('inrBalance').innerText = state.inr;
-      document.getElementById('gameWalletText').innerText = state.inr;
-      document.getElementById('withBal').innerText = state.inr;
-      document.getElementById('vltBalance').innerText = state.vlt;
+    // State Management (₹500 Free Welcome Bonus on first launch)
+    let balance = localStorage.getItem("cv_balance_inr") !== null
+      ? parseFloat(localStorage.getItem("cv_balance_inr"))
+      : 500.00;
+    let savedUPI = localStorage.getItem("cv_saved_upi") || "";
+    let deposits = JSON.parse(localStorage.getItem("cv_deposits") || "[]");
+    let withdrawals = JSON.parse(localStorage.getItem("cv_withdrawals") || "[]");
+    let historyArr = ["D", "T", "D", "D", "T", "TIE", "T", "D"];
 
-      // Lock/Unlock Banner
-      const banner = document.getElementById('lockBanner');
-      if (state.unlocked) {
-        banner.classList.add('unlocked');
-        banner.innerHTML = '<span>✅ অ্যাকাউন্ট আনলক! আপনি এখন Dragon vs Tiger খেলতে পারবেন।</span>';
-      }
-
-      // Daily Claim Check
-      const claimBtn = document.getElementById('claimBtn');
-      if (Date.now() - state.lastClaim < 86400000) {
-        claimBtn.disabled = true;
-        claimBtn.innerText = '✅ Daily 50 VLT Claimed (24h)';
-      } else {
-        claimBtn.disabled = false;
-        claimBtn.innerText = '🎁 Claim Daily 50 VLT Crypto';
-      }
-
-      // Render History
-      const hBar = document.getElementById('historyBar');
-      hBar.innerHTML = '<span style="font-size:11px; color:var(--muted); font-weight:700;">History:</span>';
-      state.history.slice(-10).forEach(item => {
-        const dot = document.createElement('div');
-        dot.className = `hist-dot hist-${item}`;
-        dot.innerText = item;
-        hBar.appendChild(dot);
-      });
+    function updateBalanceUI() {
+      localStorage.setItem("cv_balance_inr", balance.toFixed(2));
+      document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
+      document.getElementById("withAvailBal").innerText = balance.toFixed(2);
     }
 
-    // Daily Crypto Claim
-    function claimDailyCrypto() {
-      if (Date.now() - state.lastClaim >= 86400000) {
-        state.vlt += 50;
-        state.lastClaim = Date.now();
-        saveState();
-        showToast('+50 VLT Crypto Claimed!', '#0ecb81');
-      }
+    // Navigation Tabs
+    function switchTab(tab, el) {
+      sounds.chip();
+      document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach(n => n.classList.remove("active"));
+      document.getElementById("sec-" + tab).classList.add("active");
+      el.classList.add("active");
     }
 
-    // Deposit ₹2000+
-    function submitDeposit() {
-      const amt = parseInt(document.getElementById('depAmount').value);
-      const utr = document.getElementById('utrInput').value.trim();
+    // ==========================================
+    // REAL 52-CARD DRAGON VS TIGER ENGINE
+    // ==========================================
+    const SUITS = [
+      { sym: "♠", red: false },
+      { sym: "♥", red: true },
+      { sym: "♦", red: true },
+      { sym: "♣", red: false }
+    ];
+    const RANKS = [
+      { label: "A", val: 1 }, { label: "2", val: 2 }, { label: "3", val: 3 },
+      { label: "4", val: 4 }, { label: "5", val: 5 }, { label: "6", val: 6 },
+      { label: "7", val: 7 }, { label: "8", val: 8 }, { label: "9", val: 9 },
+      { label: "10", val: 10 }, { label: "J", val: 11 }, { label: "Q", val: 12 },
+      { label: "K", val: 13 }
+    ];
 
-      if (!amt || amt < 2000) {
-        showToast('মিনিমাম ₹2,000 ডিপোজিট করতে হবে!', '#f6465d');
-        return;
-      }
-      if (utr.length < 6) {
-        showToast('সঠিক UTR / Transaction ID দিন!', '#f6465d');
-        return;
-      }
-
-      state.inr += amt;
-      state.unlocked = true;
-      document.getElementById('utrInput').value = '';
-      saveState();
-      showToast(`₹${amt} সফলভাবে অ্যাড হয়েছে! গেম আনলক!`, '#0ecb81');
-      setTimeout(() => switchTab('game', 1), 1200);
+    function drawRandomCard() {
+      const r = RANKS[Math.floor(Math.random() * RANKS.length)];
+      const s = SUITS[Math.floor(Math.random() * SUITS.length)];
+      return { label: r.label, val: r.val, sym: s.sym, red: s.red };
     }
 
-    // Withdraw
-    function submitWithdraw() {
-      const upi = document.getElementById('withUpi').value.trim();
-      const amt = parseInt(document.getElementById('withAmt').value);
-      if (!upi) return showToast('আপনার UPI ID দিন!', '#f6465d');
-      if (!amt || amt < 500) return showToast('মিনিমাম উইথড্র ₹500!', '#f6465d');
-      if (amt > state.inr) return showToast('পর্যাপ্ত ব্যালেন্স নেই!', '#f6465d');
-
-      state.inr -= amt;
-      saveState();
-      document.getElementById('withAmt').value = '';
-      showToast(`₹${amt} উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!`, '#0ecb81');
+    function renderCardFace(prefix, frontId, cardObj) {
+      const frontEl = document.getElementById(frontId);
+      frontEl.className = "card-face card-front" + (cardObj.red ? " red-suit" : "");
+      document.getElementById(prefix + "Top").innerHTML = cardObj.label + "<br>" + cardObj.sym;
+      document.getElementById(prefix + "Mid").innerText = cardObj.sym;
+      document.getElementById(prefix + "Bot").innerHTML = cardObj.label + "<br>" + cardObj.sym;
     }
 
-    // Dragon vs Tiger Continuous Loop
-    let round = 101;
-    let timeLeft = 10;
+    let selectedChip = 10;
+    let bets = { D: 0, T: 0, TIE: 0 };
+    let timeLeft = 15;
+    let roundNum = 1024;
     let bettingOpen = true;
-    let selectedChip = 50;
-    let currentBetSide = null;
-    let currentBetAmount = 0;
 
-    function selectChip(amount, el) {
-      selectedChip = amount;
-      document.getElementById('selectedChipText').innerText = amount;
-      document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
+    function selectChip(amt, el) {
+      sounds.chip();
+      selectedChip = amt;
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+      el.classList.add("active");
     }
 
     function placeBet(side) {
-      if (!state.unlocked || state.inr < 50) {
-        showToast('আগে মিনিমাম ₹2,000 ডিপোজিট করুন!', '#f6465d');
-        switchTab('deposit', 2);
-        return;
-      }
       if (!bettingOpen) {
-        showToast('সময় শেষ! পরের রাউন্ডের জন্য অপেক্ষা করুন।', '#f6465d');
+        showToast("⏳ Betting closed! Wait for cards...");
         return;
       }
-      if (currentBetSide && currentBetSide !== side) {
-        showToast(`আপনি ইতিমধ্যে ${currentBetSide}-এ বেট লাগিয়েছেন!`, '#f6465d');
+      if (balance < selectedChip) {
+        showToast("❌ Insufficient balance! Please Deposit.");
         return;
       }
-      if (state.inr < selectedChip) {
-        showToast('ওয়ালেটে পর্যাপ্ত টাকা নেই!', '#f6465d');
-        return;
-      }
+      sounds.bet();
+      balance -= selectedChip;
+      bets[side] += selectedChip;
+      updateBalanceUI();
+      document.getElementById("bet-" + side).innerText = bets[side];
+    }
 
-      state.inr -= selectedChip;
-      currentBetSide = side;
-      currentBetAmount += selectedChip;
-      saveState();
-
-      document.getElementById('cardDragon').classList.toggle('selected', side === 'DRAGON');
-      document.getElementById('cardTiger').classList.toggle('selected', side === 'TIGER');
-      document.getElementById('betDragon').innerText = side === 'DRAGON' ? currentBetAmount : 0;
-      document.getElementById('betTiger').innerText = side === 'TIGER' ? currentBetAmount : 0;
-
-      showToast(`₹${selectedChip} বেট লাগানো হয়েছে (${side})!`, '#0ecb81');
+    function renderHistory() {
+      const bar = document.getElementById("historyBar");
+      bar.innerHTML = historyArr.map(r => `<div class="hist-dot hist-${r}">${r}</div>`).join("");
     }
 
     setInterval(() => {
-      if (bettingOpen) {
-        timeLeft--;
-        document.getElementById('countdownText').innerText = timeLeft + 's';
-        document.getElementById('countdownText').style.color = timeLeft <= 3 ? '#f6465d' : '#f0b90b';
+      timeLeft--;
+      document.getElementById("timerCount").innerText = timeLeft;
 
-        if (timeLeft <= 0) {
-          bettingOpen = false;
-          resolveRound();
-        }
+      if (timeLeft > 4 && timeLeft <= 8) sounds.tick();
+
+      if (timeLeft === 4) {
+        bettingOpen = false;
+        const st = document.getElementById("gameStatus");
+        st.innerText = "DEALING CARDS...";
+        st.classList.add("locked");
+
+        // Draw Dragon & Tiger Cards
+        const dCard = drawRandomCard();
+        const tCard = drawRandomCard();
+        renderCardFace("d", "dragonCardFront", dCard);
+        renderCardFace("t", "tigerCardFront", tCard);
+
+        // Flip Dragon Card first, then Tiger Card
+        setTimeout(() => {
+          sounds.flip();
+          document.getElementById("dragonCard").classList.add("flipped");
+        }, 400);
+
+        setTimeout(() => {
+          sounds.flip();
+          document.getElementById("tigerCard").classList.add("flipped");
+        }, 1200);
+
+        // Evaluate Winner
+        setTimeout(() => {
+          let winner = "TIE";
+          if (dCard.val > tCard.val) winner = "D";
+          else if (tCard.val > dCard.val) winner = "T";
+
+          document.getElementById("zone-" + winner).classList.add("winner-glow");
+          historyArr.push(winner);
+          if (historyArr.length > 14) historyArr.shift();
+          renderHistory();
+
+          let payout = 0;
+          if (winner === "D" && bets.D > 0) payout = bets.D * 2;
+          else if (winner === "T" && bets.T > 0) payout = bets.T * 2;
+          else if (winner === "TIE" && bets.TIE > 0) payout = bets.TIE * 8;
+
+          const totalBet = bets.D + bets.T + bets.TIE;
+          if (payout > 0) {
+            balance += payout;
+            updateBalanceUI();
+            sounds.win();
+            showToast(`🎉 ${winner === "D" ? "DRAGON" : winner === "T" ? "TIGER" : "TIE"} WINS! +₹${payout}`);
+          } else if (totalBet > 0) {
+            sounds.lose();
+            showToast(`😔 ${winner === "D" ? "Dragon" : winner === "T" ? "Tiger" : "Tie"} Won! Better luck next round.`);
+          }
+        }, 2000);
+      }
+
+      if (timeLeft <= 0) {
+        // Reset Round
+        timeLeft = 15;
+        roundNum++;
+        bettingOpen = true;
+        bets = { D: 0, T: 0, TIE: 0 };
+        document.getElementById("roundNumber").innerText = roundNum;
+        document.getElementById("bet-D").innerText = "0";
+        document.getElementById("bet-T").innerText = "0";
+        document.getElementById("bet-TIE").innerText = "0";
+        document.getElementById("dragonCard").classList.remove("flipped");
+        document.getElementById("tigerCard").classList.remove("flipped");
+        document.querySelectorAll(".zone-box").forEach(z => z.classList.remove("winner-glow"));
+        const st = document.getElementById("gameStatus");
+        st.innerText = "PLACE YOUR BETS";
+        st.classList.remove("locked");
       }
     }, 1000);
 
-    function resolveRound() {
-      const winner = Math.random() < 0.5 ? 'DRAGON' : 'TIGER';
-      state.history.push(winner === 'DRAGON' ? 'D' : 'T');
+    // ==========================================
+    // DIRECT UPI DEPOSIT SYSTEM (MIN ₹10)
+    // ==========================================
+    let currentPendingDep = 0;
 
-      document.getElementById('countdownText').innerText = winner + ' WINS!';
-      document.getElementById('countdownText').style.color = '#0ecb81';
-      document.getElementById('roundStatus').innerText = 'Starting next round in 3 seconds...';
+    function setDepAmount(amt) {
+      sounds.chip();
+      document.getElementById("depAmount").value = amt;
+    }
 
-      document.getElementById(winner === 'DRAGON' ? 'cardDragon' : 'cardTiger').classList.add('winner');
+    function launchDirectUPI() {
+      const amt = parseFloat(document.getElementById("depAmount").value);
+      if (!amt || amt < 10) {
+        showToast("⚠️ Minimum deposit is ₹10!");
+        return;
+      }
+      sounds.bet();
+      currentPendingDep = amt;
+      document.getElementById("pendingPayAmt").innerText = amt;
+      document.getElementById("utrVerifyBox").style.display = "block";
 
-      if (currentBetSide === winner) {
-        const winAmt = currentBetAmount * 2;
-        state.inr += winAmt;
-        showToast(`🎉 অভিনন্দন! আপনি ₹${winAmt} জিতেছেন!`, '#0ecb81');
-      } else if (currentBetSide) {
-        showToast(`😔 আপনি ₹${currentBetAmount} হেরে গেছেন!`, '#f6465d');
+      // Direct UPI Intent URI (Opens GPay/PhonePe/Paytm directly)
+      const upiUrl = `upi://pay?pa=${encodeURIComponent(MERCHANT_UPI_ID)}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt.toFixed(2)}&cu=INR&tn=${encodeURIComponent("CryptoVault Deposit")}`;
+      window.location.href = upiUrl;
+    }
+
+    function confirmDepositUTR() {
+      const utr = document.getElementById("utrInput").value.trim();
+      if (utr.length < 8) {
+        showToast("⚠️ Enter valid 12-digit UPI UTR number!");
+        return;
+      }
+      sounds.win();
+      balance += currentPendingDep;
+      updateBalanceUI();
+
+      deposits.unshift({
+        amt: currentPendingDep,
+        utr: utr,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      localStorage.setItem("cv_deposits", JSON.stringify(deposits));
+      renderTxLists();
+
+      document.getElementById("utrInput").value = "";
+      document.getElementById("utrVerifyBox").style.display = "none";
+      showToast(`✅ ₹${currentPendingDep} Added to Wallet!`);
+    }
+
+    // ==========================================
+    // SET UPI & WITHDRAWAL REQUEST SYSTEM
+    // ==========================================
+    function renderUPIState() {
+      if (savedUPI) {
+        document.getElementById("upiSetupForm").style.display = "none";
+        document.getElementById("upiSavedDisplay").style.display = "block";
+        document.getElementById("editUpiBtn").style.display = "inline-block";
+        document.getElementById("savedUpiText").innerText = savedUPI;
+      } else {
+        document.getElementById("upiSetupForm").style.display = "block";
+        document.getElementById("upiSavedDisplay").style.display = "none";
+        document.getElementById("editUpiBtn").style.display = "none";
+      }
+    }
+
+    function saveUserUPI() {
+      const val = document.getElementById("upiIdInput").value.trim();
+      if (!val || !val.includes("@")) {
+        showToast("⚠️ Enter a valid UPI ID (e.g. name@okaxis)");
+        return;
+      }
+      sounds.win();
+      savedUPI = val;
+      localStorage.setItem("cv_saved_upi", savedUPI);
+      renderUPIState();
+      showToast("✅ Payout UPI ID Saved!");
+    }
+
+    function editSavedUPI() {
+      sounds.chip();
+      document.getElementById("upiIdInput").value = savedUPI;
+      document.getElementById("upiSetupForm").style.display = "block";
+      document.getElementById("upiSavedDisplay").style.display = "none";
+    }
+
+    function submitWithdrawalRequest() {
+      if (!savedUPI) {
+        showToast("⚠️ Please set & save your UPI ID first!");
+        return;
+      }
+      const amt = parseFloat(document.getElementById("withAmount").value);
+      if (!amt || amt < 10) {
+        showToast("⚠️ Enter valid withdrawal amount (Min ₹10)");
+        return;
+      }
+      if (amt > balance) {
+        showToast("❌ Insufficient wallet balance!");
+        return;
       }
 
-      saveState();
+      sounds.bet();
+      balance -= amt;
+      updateBalanceUI();
 
-      // Reset for Next Round after 3 seconds
-      setTimeout(() => {
-        round++;
-        timeLeft = 10;
-        bettingOpen = true;
-        currentBetSide = null;
-        currentBetAmount = 0;
+      withdrawals.unshift({
+        amt: amt,
+        upi: savedUPI,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+      localStorage.setItem("cv_withdrawals", JSON.stringify(withdrawals));
+      renderTxLists();
 
-        document.getElementById('roundNumber').innerText = round;
-        document.getElementById('countdownText').innerText = '10s';
-        document.getElementById('countdownText').style.color = '#f0b90b';
-        document.getElementById('roundStatus').innerText = 'Place your bet before time runs out!';
-        document.getElementById('betDragon').innerText = '0';
-        document.getElementById('betTiger').innerText = '0';
-        document.getElementById('cardDragon').classList.remove('selected', 'winner');
-        document.getElementById('cardTiger').classList.remove('selected', 'winner');
-      }, 3000);
+      document.getElementById("withAmount").value = "";
+      showToast(`📤 Withdrawal Request of ₹${amt} Sent!`);
     }
 
-    function switchTab(tabId, navIndex) {
-      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-      document.getElementById(tabId).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+    function renderTxLists() {
+      const dList = document.getElementById("depositHistoryList");
+      if (deposits.length > 0) {
+        dList.innerHTML = deposits.map(d => `
+          <div class="tx-item">
+            <div>
+              <div style="font-weight:700; color:#fff;">+₹${d.amt} Deposit</div>
+              <div style="font-size:10px; color:var(--muted);">UTR: ${d.utr} • ${d.time}</div>
+            </div>
+            <span class="badge-success">CREDITED</span>
+          </div>
+        `).join("");
+      }
+
+      const wList = document.getElementById("withdrawHistoryList");
+      if (withdrawals.length > 0) {
+        wList.innerHTML = withdrawals.map(w => `
+          <div class="tx-item">
+            <div>
+              <div style="font-weight:700; color:#fff;">-₹${w.amt} to ${w.upi}</div>
+              <div style="font-size:10px; color:var(--muted);">Requested at ${w.time}</div>
+            </div>
+            <span class="badge-pending">PENDING ADMIN</span>
+          </div>
+        `).join("");
+      }
     }
 
-    function copyText(inputId, msg) {
-      const val = document.getElementById(inputId).value;
-      navigator.clipboard.writeText(val);
-      showToast(msg, '#0ecb81');
-    }
-
-    updateUI();
+    // Initialize App
+    updateBalanceUI();
+    renderHistory();
+    renderUPIState();
+    renderTxLists();
   </script>
 </body>
 </html>
